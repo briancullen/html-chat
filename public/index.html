@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages div { padding: 5px 10px; }
+      #messages div:nth-child(odd) { background: #eee; }
+        #messages .system { font-style: italic; }
+        #messages .error { font-style: italic; color: red; }
+    </style>
+  </head>
+  <body>
+    <div id="messages">
+      <div id="help" class="system">
+          <h2>Welcome to HTML Chat</h2>
+          <p>To start press F12 to open the console. The commands you can user are shown
+            below. Remember all of you messages have to be contained within HTML tags. If
+            you don't put all text inside tags then the message won't be sent! Finally only
+            people in the same room will be able to see your messages so make sure you know
+            who you are talking to.
+          </p>
+          <ul>
+            <li>addUser("<em>yourusername</em>") - registers you with the server. You need to do this before you can do most of the other operations.</li>
+            <li>send("<em>yourhtmlmessage</em>") - sends you message to everyone in the room.</li>
+            <li>joinRoom("<em>roomName</em>") - joins a different room to talk to people.</li>
+            <li>leaveRoom() - leaves your room and goes back to the main room.</li>
+            <li>listUsers() - lists everyone on the server and the room they are in.</li>
+            <li>listRooms() - lists all the rooms currently in use on the server.</li>
+            <li>help() - makes this message appear at the top of the screen again.</li>
+          </ul>
+      </div>
+    </div>
+    <form style="display: none;" action="">
+      <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+        var username = null;
+        var socket = io();
+        $('form').submit(function(){
+            send($('#m').val());
+            $('#m').val('');
+            return false;
+        });
+        
+        socket.on('new message', function(msg){
+            $('#messages').prepend($('<div>').html("<strong>" + msg.username+"</strong><br>" + msg.message));
+        });
+        
+        socket.on('message error', function(msg){
+            $('#messages').prepend($('<div>').addClass('error').html(msg.message + " - " + msg.error));
+        });
+        
+        socket.on('user joined', function (msg) {
+            var element = $('<div>').addClass("system").html(msg.username
+                    + " has joined the conversation in the " + msg.room + " room." );
+            $('#messages').prepend(element);
+            element.fadeOut(6000, function () { $(this).remove(); });
+        });
+        
+        socket.on('user left', function (msg) {
+            var element = $('<div>').addClass("system").html(msg.username
+                    + " has left the conversation in the " + msg.room + " room." );
+            $('#messages').prepend(element);
+            element.fadeOut(6000, function () { $(this).remove(); });
+        });
+        
+        socket.on('login', function (msg) {
+            username = msg.username;
+            var element = $('<div>').addClass("system")
+                    .html("You have joined the server with "
+                    + msg.numUsers + " other users." );
+            $('#messages').prepend(element);
+            element.fadeOut(6000, function () { $(this).remove(); });
+        });
+        
+        socket.on('user disconnected', function (msg) {
+            var element = $('<div>').addClass("system").html(msg.username
+                    + " has left the server and there are " + msg.numUsers + " users left." );
+            $('#messages').prepend(element);
+            element.fadeOut(6000, function () { $(this).remove(); });
+        });
+        
+        socket.on('left room', function (msg) {
+            var element = $('<div>').addClass("system").html
+                    ("You have left your room and are back in the " + msg + " room.");
+            $('#messages').prepend(element);
+            element.fadeOut(6000, function () { $(this).remove(); });
+        });
+        
+        socket.on('joined room', function (msg) {
+            var element = $('<div>').addClass("system").html
+                    ("You have entered the " + msg + " room.");
+            $('#messages').prepend(element);
+            element.fadeOut(6000, function () { $(this).remove(); });
+        });
+        
+        socket.on('room list', function (list) {
+           console.log(list); 
+        });
+        
+        socket.on('reconnect', function (num) {
+            
+            if (username) {
+                socket.emit('add user', username);
+            }
+        });
+        
+        socket.on('user list', function (userList) {
+           console.log(userList); 
+        });
+
+        function addUser(newname) {
+            if (!newname || newname.length < 2) {
+                console.log("Username is too short!")
+                return;
+            }
+            
+            if (username) {
+                console.log("You already have a username.");
+                return;
+            }
+            
+            socket.emit('add user', newname);
+        }
+        
+        function send(message) {
+            socket.emit('new message', message);
+        }
+        
+        function listRooms() {
+            socket.emit('request room list');
+        }
+        
+        function joinRoom (roomName) {
+            if (!roomName) {
+                console.log("You need to give a room name!");
+            }
+            socket.emit('join room', roomName);
+        }
+        
+        function leaveRoom () {
+            socket.emit('leave room');
+        }
+        
+        function listUsers() {
+            socket.emit("request user list");
+        }
+      
+        function help() {
+          $('#help').prependTo('#messages');
+        }
+    
+    </script>
+  </body>
+</html>
