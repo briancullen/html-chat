@@ -6,7 +6,7 @@ The purpose of this program was to create an educational tool that could be used
 ## Status and Warning
 The code in the repository works as far as I have tested it but it is still in development and their are probably rough edges that I'm not aware of. Also this program is meant for use on internal (school) networks.
 
-** As this program allows arbitary HTML/JavaScript to be inserted on a page it is not secure and should not be used where it can be accessed via the public Internet.**
+__As this program allows arbitary HTML/JavaScript to be inserted on a page it is not secure and should not be used where it can be accessed via the public Internet.__
 
 ## Acknowledgement
 This repository was based on one of the example I found on the socket.io website - it was really useful and if you are starting out with socket.io I recommend looking at them.
@@ -21,7 +21,7 @@ In terms of a progression of activities the following may work for you. There is
 * Use of Scripts - For the more advances there is nothing stopping them from sending scripts to each others. Obviously there is a security issue but with a standard class that isn't much of a worry.
 
 ## Requirements
-You need a server with Node and Npm installed - that's it! IF you feel like doing some work on the code you could consider installing nodemon to make you life a bit easier.
+You need a server with Node and Npm installed - that's it! If you feel like doing some work on the code you could consider installing nodemon to make you life a bit easier.
 
 ## Installing and Running
 Again really not much to it. Clone or download the repository and change into the root folder. Use npm to install the dependencies and then start the server as shown below. The server will run on port 3000 unless the PORT enviornment variable is set to something else.
