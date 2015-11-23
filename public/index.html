@@ -9,8 +9,9 @@
       form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
       #messages div { padding: 5px 10px; }
       #messages div:nth-child(odd) { background: #eee; }
-        #messages .system { font-style: italic; }
-        #messages .error { font-style: italic; color: red; }
+      #messages .system { font-style: italic; }
+      #messages .error { font-style: italic; color: red; }
+      #messages a { text-decoration: underline; color: purple; }
     </style>
   </head>
   <body>
@@ -30,7 +31,21 @@
             <li>leaveRoom() - leaves your room and goes back to the main room.</li>
             <li>listUsers() - lists everyone on the server and the room they are in.</li>
             <li>listRooms() - lists all the rooms currently in use on the server.</li>
+            <li>htmlhelp() - makes a help section showing example messages show.</li>
             <li>help() - makes this message appear at the top of the screen again.</li>
+          </ul>
+      </div>
+      <div id="htmlhelp" style="display: none;" class="system">
+          <h2>HTML Help</h2>
+          <p>Here are some examples of the type of commands you could use to send a message. Try coping and pasting them into the console and then change them to say what you want! Happy experimenting!</p>
+          <ul>
+            <li><strong>send("&#60;p&#62;This is a message&#60;/p&#62;")</strong> - send a paragraph of text.</li>
+            <li><strong>send("&#60;h2&#62;This is a heading&#60;/h2&#62;")</strong> - sends text formatted as a heading.</li>
+            <li><strong>send("&#60;p style='font-size: 99px;'&#62;BIG TEXT&#60;/p&#62;")</strong> - sends a paragraph formated to be large.</li>
+            <li><strong>send("&#60;h1 style='color: red;'&#62;WARNING!&#60;/h1&#62;")</strong> - sends text formatted as a red heading.</li>
+            <li><strong>send("&#60;img src='http://blog.boreal-kiss.net/wp/wp-content/uploads/2012/09/large.gif'&#62;")</strong> - send an image to the other personal screen.</li>
+            <li><strong>send("&#60;a href='http://www.google.com'&#62;Click here&#60;/a&#62;")</strong> - sends a link to another website.</li>
+            <li><strong>send("&#60;a onclick='alert(\"Hello!\")'&#62;Click here&#60;/a&#62;")</strong> - try this one yourself!</li>
           </ul>
       </div>
     </div>
@@ -150,6 +165,11 @@
         
         function listUsers() {
             socket.emit("request user list");
+        }
+      
+        function htmlhelp() {
+          $('#htmlhelp').show();
+          $('#htmlhelp').prependTo('#messages');
         }
       
         function help() {
