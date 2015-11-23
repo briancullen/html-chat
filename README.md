@@ -32,7 +32,7 @@ npm install
 npm start
 ```
 
-If you are planning on editing the code, and you have nodemon installed, then you can use `npm devstart` to save you time.
+If you are planning on editing the code, and you have nodemon installed, then you can use `npm run-script devstart` to save you time.
 
 ## Using the Site
 This site will be available at http://*hostname*:3000/ and should work with most modern browsers. A help section should appear on pupils screen when they open the site.
