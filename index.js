@@ -2,15 +2,23 @@
 var express = require('express');
 var app = express();
 
+var localip = require('local-ip');
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 
 var htmlTagValidator = require('html-tag-validator');
 
-var port = process.env.PORT || 3000;
-server.listen(port, function () {
-  console.log('Server listening at port %d', port);
+localip("wlan0", function(err, res) {
+  if (err) {
+    throw new Error('I have no idea what my local ip is.');
+  }
+  var port = process.env.PORT || 3000;
+  server.listen(port, function () {
+  console.log('Server listening at ', res, ":", port);
 });
+
+});
+
 
 // Routing
 app.use(express.static(__dirname + '/public'));
@@ -33,8 +41,8 @@ io.on('connection', function (socket) {
     if (!("username" in socket)) {
       socket.emit("message error", {
         message: "Who are you?",
-        error: "You need to logon using <strong>addUSer()</strong>"
-      })
+        error: "You need to logon using <strong>addUser()</strong>"
+      });
       return;
     }
     
@@ -48,10 +56,9 @@ io.on('connection', function (socket) {
       }
       
       for (var tag in tags.document) {
-        console.log(JSON.stringify(tags.document[tag].type));
-        if (tags.document[tag].type != "element") {
+        if (tags.document[tag].type == "text") {
           socket.emit("message error", {
-            message: "You must talk in proper HTML",
+            message: "What are you saying? Speak in HTML!",
             error: "All your text must be inside HTML tags."
           });
           return;          
@@ -110,6 +117,14 @@ io.on('connection', function (socket) {
   // Definitely opportunity for abstraction between the
   // next to event handlers - need to come back to this.
   socket.on('leave room', function () {
+    if (!("username" in socket)) {
+      socket.emit("message error", {
+        message: "Who are you?",
+        error: "You need to logon using <strong>addUser()</strong>"
+      });
+      return;
+    }
+
     if (socket.rooms.length == 2 &&
        socket.rooms[1] != roomPrefix+defaultRoom) {
       oldRoom = socket.rooms[1];
@@ -129,6 +144,14 @@ io.on('connection', function (socket) {
   });
 
   socket.on('join room', function (roomName) {
+    if (!("username" in socket)) {
+      socket.emit("message error", {
+        message: "Who are you?",
+        error: "You need to logon using <strong>addUser()</strong>"
+      });
+      return;
+    }
+    
     if (socket.rooms.length == 2 &&
        socket.rooms[1] != roomPrefix+roomName) {
       oldRoom = socket.rooms[1];
