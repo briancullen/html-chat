@@ -144,8 +144,14 @@
             socket.emit('add user', newname);
         }
         
-        function send(message) {
-            socket.emit('new message', message);
+        function send(message, htmlOnly) {
+            if (typeof htmlOnly === 'undefined') { 
+              htmlOnly = true; 
+            }
+          
+            socket.emit('new message',
+                        { message: message,
+                          htmlOnly: htmlOnly });
         }
         
         function listRooms() {

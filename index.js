@@ -2,19 +2,19 @@
 var express = require('express');
 var app = express();
 
-var localip = require('local-ip');
+var localip = require('node-localip');
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 
 var htmlTagValidator = require('html-tag-validator');
 
-localip("wlan0", function(err, res) {
+localip(function(err, ip) {
   if (err) {
     throw new Error('I have no idea what my local ip is.');
   }
   var port = process.env.PORT || 3000;
   server.listen(port, function () {
-  console.log('Server listening at ', res, ":", port);
+  console.log('Server listening at ', ip, ":",port);
 });
 
 });
@@ -38,6 +38,13 @@ io.on('connection', function (socket) {
   
   // when the client emits 'new message', this listens and executes
   socket.on('new message', function (data) {
+    var message = data.message;
+    var htmlOnly = data.htmlOnly;
+    
+    if (typeof htmlOnly === 'undefined') {
+      htmlOnly = true;
+    }
+    
     if (!("username" in socket)) {
       socket.emit("message error", {
         message: "Who are you?",
@@ -45,30 +52,39 @@ io.on('connection', function (socket) {
       });
       return;
     }
-    
-    htmlTagValidator(data, function(err, tags) {
-      if (err) {
-        socket.emit("message error", {
-          message: "You're mumbling, talk properly!",
-          error: err.message
-        });
-        return;
-      }
-      
-      for (var tag in tags.document) {
-        if (tags.document[tag].type == "text") {
+
+    if (htmlOnly) {
+      htmlTagValidator(message, function(err, tags) {
+        if (err) {
           socket.emit("message error", {
-            message: "What are you saying? Speak in HTML!",
-            error: "All your text must be inside HTML tags."
+            message: "You're mumbling, talk properly!",
+            error: err.message
           });
-          return;          
+          return;
         }
-      }
+
+        for (var tag in tags.document) {
+          if (tags.document[tag].type == "text") {
+            socket.emit("message error", {
+              message: "What are you saying? Speak in HTML!",
+              error: "All your text must be inside HTML tags."
+            });
+            return;          
+          }
+        }
+
+        io.to(socket.rooms[1]).emit
+        ('new message', { username: socket.username,
+                          message: message
+         });
+      });
+    }
+    else {
       io.to(socket.rooms[1]).emit
-      ('new message', { username: socket.username,
-                        message: data
-       });
-    });
+        ('new message', { username: socket.username,
+                          message: message
+         });
+    }
   });
 
   // when the client emits 'add user', this listens and executes
